@@ -25,10 +25,12 @@ android {
         versionName = "1.0"
     }
 
+    def keystorePropertiesFile = rootProject.file("key.properties")
+    def hasReleaseKey = keystorePropertiesFile.exists()
+
     signingConfigs {
         release {
-            def keystorePropertiesFile = rootProject.file("key.properties")
-            if (keystorePropertiesFile.exists()) {
+            if (hasReleaseKey) {
                 def keystoreProperties = new Properties()
                 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
                 storeFile = file(keystoreProperties['storeFile'])
@@ -41,7 +43,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.release
+            signingConfig = hasReleaseKey ? signingConfigs.release : signingConfigs.debug
             // Keep the release APK reliable for this small app; R8 otherwise
             // requires optional Play Core deferred-component classes.
             shrinkResources false
