@@ -42,8 +42,10 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.release
-            shrinkResources true
-            minifyEnabled true
+            // Keep the release APK reliable for this small app; R8 otherwise
+            // requires optional Play Core deferred-component classes.
+            shrinkResources false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
