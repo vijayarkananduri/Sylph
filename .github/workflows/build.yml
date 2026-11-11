@@ -24,30 +24,21 @@ jobs:
           flutter-version: '3.24.0'
           channel: 'stable'
 
-      - name: Create Flutter project
-        run: |
-          flutter create --project-name sylph temp_project
-          cp -r temp_project/android .
-          cp -r temp_project/ios .
-          cp temp_project/.metadata .
-          cp temp_project/analysis_options.yaml .
-          rm -rf temp_project
-
-      - name: Fix Kotlin version in settings.gradle
-        run: |
-          cat android/settings.gradle
-          # Replace the Kotlin plugin version line
-          sed -i 's|id "org.jetbrains.kotlin.android" version "[^"]*"|id "org.jetbrains.kotlin.android" version "1.9.22"|g' android/settings.gradle
-          cat android/settings.gradle
-
-      - name: Fix Kotlin version in build.gradle (legacy)
-        run: |
-          if [ -f android/build.gradle ]; then
-            sed -i 's|ext.kotlin_version = "[^"]*"|ext.kotlin_version = "1.9.22"|g' android/build.gradle
-          fi
-
       - name: Get dependencies
         run: flutter pub get
+
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons
+
+      - name: Build debug APK
+        run: flutter build apk --debug --dart-define=OWM_KEY=${{ secrets.OWM_KEY }} --dart-define=WAQI_KEY=${{ secrets.WAQI_KEY }}
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sylph-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
 
       - name: Build APK
         run: flutter build apk --release --dart-define=OWM_KEY=${{ secrets.OWM_KEY }} --dart-define=WAQI_KEY=${{ secrets.WAQI_KEY }}
